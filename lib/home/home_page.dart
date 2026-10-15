@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lb_library/config/theme/app_color.dart';
+import 'package:lb_library/core/theme/theme_controller.dart';
+import 'package:lb_library/core/utils/keyboard_utils.dart';
 import 'package:lb_library/languages/generated/l10n.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,6 +13,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedNavIndex = 0;
+  final FocusNode _searchFocusNode = FocusNode();
+
+  late final List<Widget> _pages = [
+    Builder(builder: (_) => _buildHomeContent()),
+    const Center(child: Text('Library')),
+    const Center(child: Text('Wishlist')),
+    const Center(child: Text('Profile')),
+  ];
 
   final List<Map<String, dynamic>> categories = [
     {'name': 'Fiction', 'icon': Icons.auto_stories_rounded},
@@ -41,70 +51,85 @@ class _HomePageState extends State<HomePage> {
   ];
 
   static const Color primaryColor = Color(0xFF176B48);
-  static const Color backgroundColor = Color(0xFFF5F7F2);
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.all(20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _buildHeader(),
-                  const SizedBox(height: 24),
-                  _buildSearchBar(),
-                  const SizedBox(height: 28),
-                  _buildSectionTitle('Explore Categories'),
-                  const SizedBox(height: 16),
-                  _buildCategories(),
-                  const SizedBox(height: 28),
-                  _buildSectionTitle('Featured Books'),
-                  const SizedBox(height: 16),
-                  _buildFeaturedBooks(),
-                  const SizedBox(height: 28),
-                  _buildReadingBanner(),
-                  const SizedBox(height: 28),
-                  _buildSectionTitle('Popular Books'),
-                  const SizedBox(height: 16),
-                  ...books.map(_buildBookTile),
-                  const SizedBox(height: 20),
-                ]),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: IndexedStack(index: _selectedNavIndex, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedNavIndex,
-        backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFFDCEDE0),
+        backgroundColor: colorScheme.surface,
+        indicatorColor: colorScheme.secondaryContainer,
         onDestinationSelected: (index) {
-          setState(() => _selectedNavIndex = index);
+          KeyboardUtils.hide();
+          setState(() {
+            _selectedNavIndex = index;
+          });
         },
-        destinations: const [
+        destinations:  [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore_rounded),
-            label: 'Discover',
+            icon: Icon(Icons.menu_book_rounded),
+            // selectedIcon: Icon(Icons.explore_rounded),
+            label: S.of(context).bookMenu,
           ),
           NavigationDestination(
-            icon: Icon(Icons.bookmark_outline),
-            selectedIcon: Icon(Icons.bookmark_rounded),
-            label: 'Saved',
+            icon: Icon(Icons.favorite_border),
+            selectedIcon: Icon(Icons.favorite),
+            label: 'Wishlist',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
+            label: "Wishlist",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SafeArea(
+      child: CustomScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        primary: true,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildSearchBar(),
+                const SizedBox(height: 28),
+                _buildSectionTitle('Explore Categories'),
+                const SizedBox(height: 16),
+                _buildCategories(),
+                const SizedBox(height: 28),
+                _buildSectionTitle('Featured Books'),
+                const SizedBox(height: 16),
+                _buildFeaturedBooks(),
+                const SizedBox(height: 28),
+                _buildReadingBanner(),
+                const SizedBox(height: 28),
+                _buildSectionTitle('Popular Books'),
+                const SizedBox(height: 16),
+                ...books.map(_buildBookTile),
+                const SizedBox(height: 20),
+              ]),
+            ),
           ),
         ],
       ),
@@ -134,17 +159,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               Text(
                 'Home Library',
-                style: TextStyle(
-                  fontSize: 23,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF173C2B),
-                ),
+                style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
-              Text(
-                'Discover your next favorite book',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              Text('Discover your next favorite book'),
             ],
           ),
         ),
@@ -152,21 +170,45 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {},
           icon: const Icon(Icons.notifications_none_rounded),
         ),
+        IconButton(
+          onPressed: () {
+            appThemeController.setThemeMode(
+              appThemeController.themeMode == ThemeMode.dark
+                  ? ThemeMode.light
+                  : ThemeMode.dark,
+            );
+          },
+          icon: Icon(
+            appThemeController.themeMode == ThemeMode.dark
+                ? Icons.brightness_2
+                : Icons.brightness_2_rounded,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildSearchBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextField(
+      focusNode: _searchFocusNode,
+      textInputAction: TextInputAction.search,
+      onTapOutside: (_) => KeyboardUtils.hide(),
+      onSubmitted: (_) => KeyboardUtils.hide(),
       decoration: InputDecoration(
         hintText: 'Search books, authors...',
-        prefixIcon: const Icon(Icons.search_rounded),
+        prefixIcon: IconButton(
+          tooltip: 'Focus search',
+          onPressed: () => KeyboardUtils.show(_searchFocusNode),
+          icon: const Icon(Icons.search_rounded),
+        ),
         suffixIcon: IconButton(
           onPressed: () {},
           icon: const Icon(Icons.tune_rounded),
         ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: isDark ? Colors.black26 : Colors.white10,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
@@ -177,27 +219,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF173C2B),
-            ),
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
           ),
         ),
         TextButton(
           onPressed: () {},
-          child: const Text('See all', style: TextStyle(color: primaryColor)),
+          child: Text('See all', style: TextStyle(color: colorScheme.primary)),
         ),
       ],
     );
   }
 
   Widget _buildCategories() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SizedBox(
       height: 105,
       child: ListView.separated(
@@ -215,12 +257,12 @@ class _HomePageState extends State<HomePage> {
                   height: 58,
                   width: 58,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDCEDE0),
+                    color: colorScheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Icon(
                     category['icon'] as IconData,
-                    color: primaryColor,
+                    color: colorScheme.primary,
                     size: 27,
                   ),
                 ),
@@ -240,6 +282,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildFeaturedBooks() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SizedBox(
       height: 230,
       child: ListView.separated(
@@ -285,7 +329,10 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     book['author'] as String,
                     maxLines: 1,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -334,7 +381,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBookTile(Map<String, dynamic> book) {
     return Card(
-      color: Colors.white,
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
