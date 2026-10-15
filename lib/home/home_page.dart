@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:lb_library/config/theme/app_color.dart';
+import 'package:lb_library/languages/generated/l10n.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -142,10 +143,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 4),
               Text(
                 'Discover your next favorite book',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
@@ -193,10 +191,7 @@ class _HomePageState extends State<HomePage> {
         ),
         TextButton(
           onPressed: () {},
-          child: const Text(
-            'See all',
-            style: TextStyle(color: primaryColor),
-          ),
+          child: const Text('See all', style: TextStyle(color: primaryColor)),
         ),
       ],
     );
@@ -290,10 +285,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     book['author'] as String,
                     maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
@@ -308,40 +300,33 @@ class _HomePageState extends State<HomePage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: primaryColor,
+        color: AppColor.active,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Keep Reading',
-                  style: TextStyle(
+                  S.of(context).appTitle,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Continue your reading journey today.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 10),
-          const Icon(
-            Icons.menu_book_rounded,
-            color: Colors.white,
-            size: 48,
-          ),
+          const Icon(Icons.menu_book_rounded, color: Colors.white, size: 48),
         ],
       ),
     );
@@ -352,9 +337,7 @@ class _HomePageState extends State<HomePage> {
       color: Colors.white,
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         contentPadding: const EdgeInsets.all(10),
         leading: Container(
@@ -364,10 +347,7 @@ class _HomePageState extends State<HomePage> {
             color: book['color'] as Color,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            book['icon'] as IconData,
-            color: Colors.white,
-          ),
+          child: Icon(book['icon'] as IconData, color: Colors.white),
         ),
         title: Text(
           book['title'] as String,
