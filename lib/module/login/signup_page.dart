@@ -8,7 +8,7 @@ class SignupPage extends StatefulWidget {
   @override
   State<SignupPage> createState() => _SignupPageState();
 }
-///signup page for the app
+///hahahaha
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
 
