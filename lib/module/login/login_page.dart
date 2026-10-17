@@ -385,7 +385,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _openSignup() {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => const SignupPage()));
+    context.pushNamed(AppRoute.signup);
   }
 }
