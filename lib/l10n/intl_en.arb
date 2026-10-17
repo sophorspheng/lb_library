@@ -1,8 +1,24 @@
 {
-  "appTitle": "Home Library",
+  "@@locale": "en",
+  "hometitle": "Readora",
+  "settings": "Settings",
+  "language": "Language",
+  "chooseLanguage": "Choose Language",
   "home": "Home",
   "books": "Books",
   "favorites": "Favorites",
-  "settings": "Settings"
-  ,"bookMenu":"Book"
+  "profile": "Profile",
+  "exploreCategories": "Explore Categories",
+  "featuredBooks": "Featured Books",
+  "popularBooks": "Popular Books",
+  "discoverBooks": "Discover your next favorite book",
+  "searchBooksAuthors": "Search books, authors...",
+  "filterBooks": "Filter books",
+  "seeAll": "See all",
+  "continueReading": "Continue Reading",
+  "continueReadingJourney": "Continue your reading journey today.",
+  "fiction": "Fiction",
+  "education": "Education",
+  "history": "History",
+  "science": "Science"
 }

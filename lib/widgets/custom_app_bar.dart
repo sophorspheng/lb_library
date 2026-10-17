@@ -27,7 +27,7 @@ class CustomAppBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: backgroundColor,
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
       foregroundColor: iconColor,
       elevation: 0,
       scrolledUnderElevation: 0,

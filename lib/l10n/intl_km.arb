@@ -1,8 +1,24 @@
 {
-  "appTitle": "បណ្ណាល័យផ្ទះ",
+  "@@locale": "km",
+  "hometitle": "Readora",
+  "language": "ភាសា",
   "home": "ទំព័រដើម",
   "books": "សៀវភៅ",
   "favorites": "សៀវភៅចូលចិត្ត",
   "settings": "ការកំណត់",
-  "bookMenu":" "សៀវភៅ"
+  "chooseLanguage": "ជ្រើសរើសភាសា",
+  "profile": "ប្រវត្តិរូប",
+  "exploreCategories": "ស្វែងរកតាមប្រភេទ",
+  "featuredBooks": "សៀវភៅពិសេស",
+  "popularBooks": "សៀវភៅពេញនិយម",
+  "discoverBooks": "ស្វែងរកសៀវភៅដែលអ្នកចូលចិត្ត",
+  "searchBooksAuthors": "ស្វែងរកសៀវភៅ និងអ្នកនិពន្ធ...",
+  "filterBooks": "ត្រងសៀវភៅ",
+  "seeAll": "មើលទាំងអស់",
+  "continueReading": "បន្តការអាន",
+  "continueReadingJourney": "បន្តដំណើរអានសៀវភៅរបស់អ្នកថ្ងៃនេះ។",
+  "fiction": "ប្រលោមលោក",
+  "education": "ការអប់រំ",
+  "history": "ប្រវត្តិសាស្ត្រ",
+  "science": "វិទ្យាសាស្ត្រ"
 }

@@ -22,10 +22,34 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-    "appTitle": MessageLookupByLibrary.simpleMessage("បណ្ណាល័យផ្ទះ"),
     "books": MessageLookupByLibrary.simpleMessage("សៀវភៅ"),
+    "chooseLanguage": MessageLookupByLibrary.simpleMessage("ជ្រើសរើសភាសា"),
+    "continueReading": MessageLookupByLibrary.simpleMessage("បន្តការអាន"),
+    "continueReadingJourney": MessageLookupByLibrary.simpleMessage(
+      "បន្តដំណើរអានសៀវភៅរបស់អ្នកថ្ងៃនេះ។",
+    ),
+    "discoverBooks": MessageLookupByLibrary.simpleMessage(
+      "ស្វែងរកសៀវភៅដែលអ្នកចូលចិត្ត",
+    ),
+    "education": MessageLookupByLibrary.simpleMessage("ការអប់រំ"),
+    "exploreCategories": MessageLookupByLibrary.simpleMessage(
+      "ស្វែងរកតាមប្រភេទ",
+    ),
     "favorites": MessageLookupByLibrary.simpleMessage("សៀវភៅចូលចិត្ត"),
+    "featuredBooks": MessageLookupByLibrary.simpleMessage("សៀវភៅពិសេស"),
+    "fiction": MessageLookupByLibrary.simpleMessage("ប្រលោមលោក"),
+    "filterBooks": MessageLookupByLibrary.simpleMessage("ត្រងសៀវភៅ"),
+    "history": MessageLookupByLibrary.simpleMessage("ប្រវត្តិសាស្ត្រ"),
     "home": MessageLookupByLibrary.simpleMessage("ទំព័រដើម"),
+    "hometitle": MessageLookupByLibrary.simpleMessage("Readora"),
+    "language": MessageLookupByLibrary.simpleMessage("ភាសា"),
+    "popularBooks": MessageLookupByLibrary.simpleMessage("សៀវភៅពេញនិយម"),
+    "profile": MessageLookupByLibrary.simpleMessage("ប្រវត្តិរូប"),
+    "science": MessageLookupByLibrary.simpleMessage("វិទ្យាសាស្ត្រ"),
+    "searchBooksAuthors": MessageLookupByLibrary.simpleMessage(
+      "ស្វែងរកសៀវភៅ និងអ្នកនិពន្ធ...",
+    ),
+    "seeAll": MessageLookupByLibrary.simpleMessage("មើលទាំងអស់"),
     "settings": MessageLookupByLibrary.simpleMessage("ការកំណត់"),
   };
 }

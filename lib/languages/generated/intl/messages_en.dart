@@ -22,10 +22,34 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-    "appTitle": MessageLookupByLibrary.simpleMessage("Home Library"),
     "books": MessageLookupByLibrary.simpleMessage("Books"),
+    "chooseLanguage": MessageLookupByLibrary.simpleMessage("Choose Language"),
+    "continueReading": MessageLookupByLibrary.simpleMessage("Continue Reading"),
+    "continueReadingJourney": MessageLookupByLibrary.simpleMessage(
+      "Continue your reading journey today.",
+    ),
+    "discoverBooks": MessageLookupByLibrary.simpleMessage(
+      "Discover your next favorite book",
+    ),
+    "education": MessageLookupByLibrary.simpleMessage("Education"),
+    "exploreCategories": MessageLookupByLibrary.simpleMessage(
+      "Explore Categories",
+    ),
     "favorites": MessageLookupByLibrary.simpleMessage("Favorites"),
+    "featuredBooks": MessageLookupByLibrary.simpleMessage("Featured Books"),
+    "fiction": MessageLookupByLibrary.simpleMessage("Fiction"),
+    "filterBooks": MessageLookupByLibrary.simpleMessage("Filter books"),
+    "history": MessageLookupByLibrary.simpleMessage("History"),
     "home": MessageLookupByLibrary.simpleMessage("Home"),
+    "hometitle": MessageLookupByLibrary.simpleMessage("Readora"),
+    "language": MessageLookupByLibrary.simpleMessage("Language"),
+    "popularBooks": MessageLookupByLibrary.simpleMessage("Popular Books"),
+    "profile": MessageLookupByLibrary.simpleMessage("Profile"),
+    "science": MessageLookupByLibrary.simpleMessage("Science"),
+    "searchBooksAuthors": MessageLookupByLibrary.simpleMessage(
+      "Search books, authors...",
+    ),
+    "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
   };
 }

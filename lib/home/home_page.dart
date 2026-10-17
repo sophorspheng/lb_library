@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lb_library/config/theme/app_color.dart';
+import 'package:lb_library/core/storage/preferences_service.dart';
 import 'package:lb_library/core/theme/theme_controller.dart';
 import 'package:lb_library/core/utils/keyboard_utils.dart';
+import 'package:lb_library/home/service/home_service.dart';
 import 'package:lb_library/languages/generated/l10n.dart';
+import 'package:lb_library/module/library/library_page.dart';
+import 'package:lb_library/module/library/wishlist_page.dart';
+import 'package:lb_library/module/setting/setting_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,13 +20,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedNavIndex = 0;
   final FocusNode _searchFocusNode = FocusNode();
-
-  late final List<Widget> _pages = [
-    Builder(builder: (_) => _buildHomeContent()),
-    const Center(child: Text('Library')),
-    const Center(child: Text('Wishlist')),
-    const Center(child: Text('Profile')),
-  ];
 
   final List<Map<String, dynamic>> categories = [
     {'name': 'Fiction', 'icon': Icons.auto_stories_rounded},
@@ -60,40 +59,47 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final pages = [
+      Builder(builder: (_) => _buildHomeContent()),
+      LibraryPage(),
+      WishlistPage(),
+      SettingsPage(),
+    ];
 
     return Scaffold(
-      body: IndexedStack(index: _selectedNavIndex, children: _pages),
+      body: IndexedStack(index: _selectedNavIndex, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedNavIndex,
-        backgroundColor: colorScheme.surface,
-        indicatorColor: colorScheme.secondaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
+        elevation: 0,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
           KeyboardUtils.hide();
           setState(() {
             _selectedNavIndex = index;
           });
         },
-        destinations:  [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home_rounded),
+            label: S.of(context).home,
           ),
           NavigationDestination(
-            icon: Icon(Icons.menu_book_rounded),
-            // selectedIcon: Icon(Icons.explore_rounded),
-            label: S.of(context).bookMenu,
+            icon: const Icon(Icons.menu_book_outlined),
+            selectedIcon: const Icon(Icons.menu_book_rounded),
+            label: S.of(context).books,
           ),
           NavigationDestination(
-            icon: Icon(Icons.favorite_border),
-            selectedIcon: Icon(Icons.favorite),
-            label: 'Wishlist',
+            icon: const Icon(Icons.favorite_border_rounded),
+            selectedIcon: const Icon(Icons.favorite_rounded),
+            label: S.of(context).favorites,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: "Wishlist",
+            icon: const Icon(Icons.person_outline_rounded),
+            selectedIcon: const Icon(Icons.person_rounded),
+            label: S.of(context).profile,
           ),
         ],
       ),
@@ -102,32 +108,54 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHomeContent() {
     return SafeArea(
+      bottom: false,
       child: CustomScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        primary: true,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
+          // Brand header scrolls away
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              child: _buildHeader(),
+            ),
+          ),
+
+          SliverAppBar(
+            pinned: true,
+            floating: false,
+            automaticallyImplyLeading: false,
+            // backgroundColor: colorScheme.surface,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            toolbarHeight: 78,
+            titleSpacing: 20,
+            title: _buildSearchBar(),
+          ),
+
           SliverPadding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildHeader(),
-                const SizedBox(height: 24),
-                _buildSearchBar(),
-                const SizedBox(height: 28),
-                _buildSectionTitle('Explore Categories'),
+                _buildSectionTitle(S.of(context).exploreCategories),
                 const SizedBox(height: 16),
                 _buildCategories(),
+
                 const SizedBox(height: 28),
-                _buildSectionTitle('Featured Books'),
+
+                _buildSectionTitle(S.of(context).featuredBooks),
                 const SizedBox(height: 16),
                 _buildFeaturedBooks(),
+
                 const SizedBox(height: 28),
+
                 _buildReadingBanner(),
+
                 const SizedBox(height: 28),
-                _buildSectionTitle('Popular Books'),
-                const SizedBox(height: 16),
+
+                _buildSectionTitle(S.of(context).popularBooks),
+                const SizedBox(height: 12),
                 ...books.map(_buildBookTile),
-                const SizedBox(height: 20),
               ]),
             ),
           ),
@@ -153,16 +181,19 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Home Library',
-                style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+                S.of(context).hometitle,
+                style: const TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              SizedBox(height: 4),
-              Text('Discover your next favorite book'),
+              const SizedBox(height: 4),
+              Text(S.of(context).discoverBooks),
             ],
           ),
         ),
@@ -171,13 +202,7 @@ class _HomePageState extends State<HomePage> {
           icon: const Icon(Icons.notifications_none_rounded),
         ),
         IconButton(
-          onPressed: () {
-            appThemeController.setThemeMode(
-              appThemeController.themeMode == ThemeMode.dark
-                  ? ThemeMode.light
-                  : ThemeMode.dark,
-            );
-          },
+          onPressed: _toggleTheme,
           icon: Icon(
             appThemeController.themeMode == ThemeMode.dark
                 ? Icons.brightness_2
@@ -189,7 +214,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return TextField(
       focusNode: _searchFocusNode,
@@ -197,21 +222,29 @@ class _HomePageState extends State<HomePage> {
       onTapOutside: (_) => KeyboardUtils.hide(),
       onSubmitted: (_) => KeyboardUtils.hide(),
       decoration: InputDecoration(
-        hintText: 'Search books, authors...',
-        prefixIcon: IconButton(
-          tooltip: 'Focus search',
-          onPressed: () => KeyboardUtils.show(_searchFocusNode),
-          icon: const Icon(Icons.search_rounded),
-        ),
+        hintText: S.of(context).searchBooksAuthors,
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+        prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: IconButton(
+          tooltip: S.of(context).filterBooks,
           onPressed: () {},
           icon: const Icon(Icons.tune_rounded),
         ),
         filled: true,
-        fillColor: isDark ? Colors.black26 : Colors.white10,
+        // fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(
+            color: colorScheme.primary.withValues(alpha: 0.5),
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
       ),
@@ -231,7 +264,10 @@ class _HomePageState extends State<HomePage> {
         ),
         TextButton(
           onPressed: () {},
-          child: Text('See all', style: TextStyle(color: colorScheme.primary)),
+          child: Text(
+            S.of(context).seeAll,
+            style: TextStyle(color: colorScheme.primary),
+          ),
         ),
       ],
     );
@@ -245,7 +281,7 @@ class _HomePageState extends State<HomePage> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 18),
+        separatorBuilder: (_, _) => const SizedBox(width: 18),
         itemBuilder: (context, index) {
           final category = categories[index];
 
@@ -268,7 +304,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  category['name'] as String,
+                  _categoryName(category['name'] as String),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 12),
@@ -289,7 +325,7 @@ class _HomePageState extends State<HomePage> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: books.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final book = books[index];
 
@@ -357,7 +393,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  S.of(context).appTitle,
+                  S.of(context).continueReading,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -365,9 +401,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Continue your reading journey today.',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                Text(
+                  S.of(context).continueReadingJourney,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
@@ -415,6 +451,39 @@ class _HomePageState extends State<HomePage> {
         content: Text('Selected: ${book['title']}'),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+
+  String _categoryName(String category) {
+    final localizations = S.of(context);
+    return switch (category) {
+      'Fiction' => localizations.fiction,
+      'Education' => localizations.education,
+      'History' => localizations.history,
+      'Science' => localizations.science,
+      _ => category,
+    };
+  }
+
+  Future<void> _toggleTheme() async {
+    final nextMode = appThemeController.themeMode == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
+    try {
+      await appThemeController.setThemeMode(nextMode);
+    } on PlatformException catch (error) {
+      _showPreferenceError(error);
+    } on MissingPluginException catch (error) {
+      _showPreferenceError(error);
+    } on PreferencesException catch (error) {
+      _showPreferenceError(error);
+    }
+  }
+
+  void _showPreferenceError(Object error) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Could not save app preference: $error')),
     );
   }
 }

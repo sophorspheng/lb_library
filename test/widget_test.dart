@@ -6,7 +6,7 @@ void main() {
   testWidgets('theme toggle switches the app to dark mode', (
     WidgetTester tester,
   ) async {
-    appThemeController.setThemeMode(ThemeMode.light);
+    await appThemeController.setThemeMode(ThemeMode.light);
     // await tester.pumpWidget(const AppLB());
 
     expect(

@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:lb_library/core/storage/preferences_service.dart';
 
 final appThemeController = ThemeController();
 
@@ -8,16 +8,26 @@ class ThemeController extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
 
-  void setThemeMode(ThemeMode mode) {
-    if (_themeMode == mode) return;
-
-    _themeMode = mode;
+  Future<void> loadSavedThemeMode() async {
+    _themeMode = await PreferencesService.instance.loadThemeMode();
     notifyListeners();
   }
 
-  void toggleTheme(bool isDark) {
-    setThemeMode(
-      isDark ? ThemeMode.dark : ThemeMode.light,
-    );
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (_themeMode == mode) return;
+    final previousMode = _themeMode;
+    _themeMode = mode;
+    notifyListeners();
+    try {
+      await PreferencesService.instance.saveThemeMode(mode);
+    } on Object {
+      _themeMode = previousMode;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> toggleTheme(bool isDark) {
+    return setThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
   }
 }

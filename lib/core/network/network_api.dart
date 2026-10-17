@@ -6,7 +6,7 @@ class NetworkAPI {
 
   static final NetworkAPI instance = NetworkAPI._internal();
 
-  static const String _baseUrl = 'https://your-api.com/api/';
+  static const String _baseUrl = 'http://localhost:8080/';
 
   final Dio _dio = Dio(
     BaseOptions(
