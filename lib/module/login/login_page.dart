@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lb_library/config/routes/app_route.dart';
+import 'package:lb_library/core/network/network_api.dart';
 import 'package:lb_library/core/storage/preferences_service.dart';
-
-import 'signup_page.dart';
+import 'package:lb_library/module/login/service/login_service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.loginService});
+
+  final LoginService? loginService;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -15,7 +17,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
@@ -30,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -93,27 +95,22 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 36),
 
                     const Text(
-                      'Email Address',
+                      'Username',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      controller: _usernameController,
+                      keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
+                      autofillHints: const [AutofillHints.username],
                       decoration: _inputDecoration(
-                        hint: 'Enter your email',
+                        hint: 'Enter your username',
                         icon: Icons.email_outlined,
                       ),
                       validator: (value) {
-                        final email = value?.trim() ?? '';
-                        if (email.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                            .hasMatch(email)) {
-                          return 'Please enter a valid email';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your username';
                         }
                         return null;
                       },
@@ -153,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
-                        if (value.length < 6) {
+                        if (value.length < 4) {
                           return 'Password must be at least 6 characters';
                         }
                         return null;
@@ -313,39 +310,41 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
-    if (_emailController.text.trim() != 'admin@num.com.kh' ||
-        _passwordController.text != '12341234') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid username and password!')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      await PreferencesService.instance.saveRememberedEmail(
-        _rememberMe ? _emailController.text : null,
+      final user = await (widget.loginService ?? LoginService()).authUser(
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
       );
-    } on PlatformException catch (error) {
-      _showPreferenceError(error, action: 'save');
-      return;
-    } on MissingPluginException catch (error) {
-      _showPreferenceError(error, action: 'save');
-      return;
-    } on PreferencesException catch (error) {
-      _showPreferenceError(error, action: 'save');
-      return;
-    }
 
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-    });
-    context.goNamed(AppRoute.home);
+      if (!mounted) return;
+      try {
+        await PreferencesService.instance.saveRememberedEmail(
+          _rememberMe ? _usernameController.text.trim() : null,
+        );
+        await PreferencesService.instance.saveLoggedOut(false);
+      } on PlatformException catch (error) {
+        _showPreferenceError(error, action: 'save');
+        return;
+      } on MissingPluginException catch (error) {
+        _showPreferenceError(error, action: 'save');
+        return;
+      } on PreferencesException catch (error) {
+        _showPreferenceError(error, action: 'save');
+        return;
+      }
+
+      NetworkAPI.instance.dio.options.headers['Authorization'] =
+          '${user.type} ${user.token}';
+      if (mounted) context.goNamed(AppRoute.home);
+    } on NetworkException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _loadRememberedEmail() async {
@@ -354,7 +353,7 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted || email == null) return;
 
       setState(() {
-        _emailController.text = email;
+        _usernameController.text = email;
         _rememberMe = true;
       });
     } on PlatformException catch (error) {

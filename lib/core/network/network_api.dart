@@ -1,12 +1,39 @@
-
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class NetworkAPI {
   NetworkAPI._internal();
 
   static final NetworkAPI instance = NetworkAPI._internal();
 
-  static const String _baseUrl = 'http://localhost:8080/';
+  static const String _configuredBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+  );
+  static const String _lanBaseUrl = 'http://localhost:8080/';
+  // static const String _lanBaseUrl = 'http://10.250.0.71:8080/';//sala
+  // static const String _lanBaseUrl = 'http://192.168.1.7:8080/';
+  // static const String _androidEmulatorBaseUrl = 'http://10.250.0.71:8080/'; //sala
+  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8080/';
+
+  static String get _baseUrl {
+    final isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    final configuredUri = Uri.tryParse(_configuredBaseUrl);
+
+    if (configuredUri != null && configuredUri.hasAuthority) {
+      final usesLoopback =
+          configuredUri.host == 'localhost' ||
+          configuredUri.host == '127.0.0.1' ||
+          configuredUri.host == '::1';
+
+      if (isAndroid && usesLoopback) {
+        return configuredUri.replace(host: '10.0.2.2').toString();
+      }
+      return configuredUri.toString();
+    }
+
+    return isAndroid ? _androidEmulatorBaseUrl : _lanBaseUrl;
+  }
 
   final Dio _dio = Dio(
     BaseOptions(
@@ -42,17 +69,9 @@ class NetworkAPI {
     }
   }
 
-  Future<dynamic> apiPost(
-    String url,
-    dynamic data, {
-    Options? options,
-  }) async {
+  Future<dynamic> apiPost(String url, dynamic data, {Options? options}) async {
     try {
-      final response = await _dio.post(
-        url,
-        data: data,
-        options: options,
-      );
+      final response = await _dio.post(url, data: data, options: options);
       return response.data;
     } catch (e) {
       _handleError(e);
@@ -77,10 +96,7 @@ class NetworkAPI {
     }
   }
 
-  Future<dynamic> apiDelete(
-    String url, {
-    dynamic data,
-  }) async {
+  Future<dynamic> apiDelete(String url, {dynamic data}) async {
     try {
       final response = await _dio.delete(url, data: data);
       return response.data;
@@ -94,11 +110,7 @@ class NetworkAPI {
     Map<String, dynamic> data, {
     CancelToken? cancelToken,
   }) async {
-    return apiGet(
-      url,
-      queryParameters: data,
-      cancelToken: cancelToken,
-    );
+    return apiGet(url, queryParameters: data, cancelToken: cancelToken);
   }
 
   Future<dynamic> apiPostParamToken(
@@ -106,10 +118,7 @@ class NetworkAPI {
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await _dio.post(
-        url,
-        queryParameters: data,
-      );
+      final response = await _dio.post(url, queryParameters: data);
       return response.data;
     } catch (e) {
       _handleError(e);
@@ -138,6 +147,17 @@ class NetworkAPI {
 
   Never _handleError(Object error) {
     if (error is DioException) {
+      if (kDebugMode) {
+        final requestUri = error.requestOptions.uri.replace(
+          query: '',
+          fragment: '',
+        );
+        debugPrint(
+          '[NetworkAPI] ${error.requestOptions.method} '
+          '$requestUri failed '
+          '(${error.type}): ${error.message}',
+        );
+      }
       throw NetworkException.fromDio(error);
     }
 
@@ -149,10 +169,7 @@ class NetworkException implements Exception {
   final String message;
   final int? statusCode;
 
-  const NetworkException({
-    required this.message,
-    this.statusCode,
-  });
+  const NetworkException({required this.message, this.statusCode});
 
   factory NetworkException.fromDio(DioException error) {
     final responseData = error.response?.data;
@@ -160,9 +177,7 @@ class NetworkException implements Exception {
     String message = error.message ?? 'Something went wrong';
 
     if (responseData is Map) {
-      message = (responseData['message'] ??
-              responseData['error'] ??
-              message)
+      message = (responseData['message'] ?? responseData['error'] ?? message)
           .toString();
     }
 

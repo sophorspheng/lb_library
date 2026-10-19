@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lb_library/home/home_page.dart';
+import 'package:lb_library/module/home/home_page.dart';
 import 'package:lb_library/languages/generated/l10n.dart';
 import 'package:lb_library/module/setting/setting_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';

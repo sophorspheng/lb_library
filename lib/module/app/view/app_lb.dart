@@ -6,8 +6,8 @@ import 'package:lb_library/languages/generated/l10n.dart';
 import 'package:lb_library/main.dart';
 import 'package:lb_library/widgets/language_controller.dart';
 
-class AppLB extends StatefulWidget {
-  const AppLB({super.key});
+class ReadoraApp extends StatefulWidget {
+  const ReadoraApp({super.key});
 
   static BuildContext get context {
     final context = appRouter.routerDelegate.navigatorKey.currentContext;
@@ -20,10 +20,10 @@ class AppLB extends StatefulWidget {
   }
 
   @override
-  State<AppLB> createState() => _AppLBState();
+  State<ReadoraApp> createState() => _ReadoraAppState();
 }
 
-class _AppLBState extends State<AppLB> {
+class _ReadoraAppState extends State<ReadoraApp> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(

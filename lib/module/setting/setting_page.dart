@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lb_library/config/routes/app_route.dart';
+import 'package:lb_library/core/network/network_api.dart';
 import 'package:lb_library/core/storage/preferences_service.dart';
 import 'package:lb_library/core/theme/theme_controller.dart';
 import 'package:lb_library/languages/generated/l10n.dart';
@@ -74,219 +75,222 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        children: [
-          _buildProfileCard(),
-          const SizedBox(height: 24),
+      body: RefreshIndicator(
+        onRefresh: _loadNotificationPreference,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          children: [
+            _buildProfileCard(),
+            const SizedBox(height: 24),
 
-          _buildSectionTitle('Account'),
-          _buildCard(
-            children: [
-              _buildTile(
-                icon: Icons.person_outline_rounded,
-                title: 'Personal Information',
-                subtitle: 'Manage your profile details',
-                onTap: _showPersonalInformation,
-              ),
-              _buildDivider(),
-              _buildTile(
-                icon: Icons.share_outlined,
-                title: 'Share Account',
-                subtitle: 'Share your library profile',
-                onTap: _shareAccount,
-              ),
-              _buildDivider(),
-              _buildTile(
-                icon: Icons.history_rounded,
-                title: 'Reading History',
-                subtitle: 'View your reading activity',
-                onTap: () => _showMessage(
-                  'Reading History',
-                  'Connect this option to your reading history page.',
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          _buildSectionTitle('Appearance'),
-          _buildCard(
-            children: [
-              _buildTile(
-                icon: Icons.palette_outlined,
-                title: 'Theme',
-                subtitle: _themeLabel(_themeMode),
-                onTap: _showThemePicker,
-              ),
-              _buildDivider(),
-              _buildTile(
-                icon: Icons.language_rounded,
-                title: S.of(context).language,
-                subtitle: appLanguageController.locale.languageCode == 'km'
-                    ? 'ខ្មែរ'
-                    : 'English',
-                onTap: _showLanguagePicker,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          _buildSectionTitle('Notifications'),
-          _buildCard(
-            children: [
-              SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                secondary: _iconContainer(Icons.notifications_none_rounded),
-                title: const Text(
-                  'Push Notifications',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: const Text('Receive reading updates'),
-                value: _notificationsEnabled,
-                activeThumbColor: _primaryColor,
-                onChanged: (value) async {
-                  final previousValue = _notificationsEnabled;
-                  setState(() {
-                    _notificationsEnabled = value;
-                  });
-                  try {
-                    await PreferencesService.instance.saveNotificationsEnabled(
-                      value,
-                    );
-                  } on PlatformException catch (error) {
-                    _restoreNotificationPreference(previousValue, error);
-                  } on MissingPluginException catch (error) {
-                    _restoreNotificationPreference(previousValue, error);
-                  } on PreferencesException catch (error) {
-                    _restoreNotificationPreference(previousValue, error);
-                  }
-                },
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          _buildSectionTitle('Storage & Privacy'),
-          _buildCard(
-            children: [
-              _buildTile(
-                icon: Icons.download_outlined,
-                title: 'Downloaded Books',
-                subtitle: 'Manage your offline books',
-                onTap: () => _showMessage(
-                  'Downloaded Books',
-                  'Connect this option to your downloaded books page.',
-                ),
-              ),
-              _buildDivider(),
-              _buildTile(
-                icon: Icons.cleaning_services_outlined,
-                title: 'Clear Cache',
-                subtitle: 'Free up storage space',
-                onTap: _confirmClearCache,
-              ),
-              _buildDivider(),
-              _buildTile(
-                icon: Icons.lock_outline_rounded,
-                title: 'Privacy Policy',
-                subtitle: 'Learn how your data is used',
-                onTap: () => _showMessage(
-                  'Privacy Policy',
-                  'Add your privacy policy page or website here.',
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          _buildSectionTitle('About'),
-          _buildCard(
-            children: [
-              _buildTile(
-                icon: Icons.info_outline_rounded,
-                title: 'About LB Library',
-                subtitle: 'Version 1.0.0',
-                onTap: () => _showMessage(
-                  'LB Library',
-                  'Your personal digital library for discovering and '
-                      'managing your favorite books.',
-                ),
-              ),
-              _buildDivider(),
-              _buildTile(
-                icon: Icons.star_outline_rounded,
-                title: 'Rate Our App',
-                subtitle: 'Tell us what you think',
-                onTap: () => _showMessage(
-                  'Rate Our App',
-                  'Connect this option to your app store listing.',
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Logout
-          _buildCard(
-            children: [
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
-                leading: _iconContainer(
-                  Icons.logout_rounded,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: const Text('Sign out of your account'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.red,
-                  size: 16,
-                ),
-                onTap: _confirmLogout,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          Center(
-            child: Column(
+            _buildSectionTitle('Account'),
+            _buildCard(
               children: [
-                Icon(
-                  Icons.menu_book_rounded,
-                  size: 30,
-                  color: _primaryColor.withValues(alpha: 0.7),
+                _buildTile(
+                  icon: Icons.person_outline_rounded,
+                  title: 'Personal Information',
+                  subtitle: 'Manage your profile details',
+                  onTap: _showPersonalInformation,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'LB Library',
-                  style: TextStyle(
-                    color: _mutedColor,
-                    fontWeight: FontWeight.w600,
+                _buildDivider(),
+                _buildTile(
+                  icon: Icons.share_outlined,
+                  title: 'Share Account',
+                  subtitle: 'Share your library profile',
+                  onTap: _shareAccount,
+                ),
+                _buildDivider(),
+                _buildTile(
+                  icon: Icons.history_rounded,
+                  title: 'Reading History',
+                  subtitle: 'View your reading activity',
+                  onTap: () => _showMessage(
+                    'Reading History',
+                    'Connect this option to your reading history page.',
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Read more. Learn more.',
-                  style: TextStyle(color: _mutedColor, fontSize: 12),
                 ),
               ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: 24),
+            _buildSectionTitle('Appearance'),
+            _buildCard(
+              children: [
+                _buildTile(
+                  icon: Icons.palette_outlined,
+                  title: 'Theme',
+                  subtitle: _themeLabel(_themeMode),
+                  onTap: _showThemePicker,
+                ),
+                _buildDivider(),
+                _buildTile(
+                  icon: Icons.language_rounded,
+                  title: S.of(context).language,
+                  subtitle: appLanguageController.locale.languageCode == 'km'
+                      ? 'ខ្មែរ'
+                      : 'English',
+                  onTap: _showLanguagePicker,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildSectionTitle('Notifications'),
+            _buildCard(
+              children: [
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  secondary: _iconContainer(Icons.notifications_none_rounded),
+                  title: const Text(
+                    'Push Notifications',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text('Receive reading updates'),
+                  value: _notificationsEnabled,
+                  activeThumbColor: _primaryColor,
+                  onChanged: (value) async {
+                    final previousValue = _notificationsEnabled;
+                    setState(() {
+                      _notificationsEnabled = value;
+                    });
+                    try {
+                      await PreferencesService.instance
+                          .saveNotificationsEnabled(value);
+                    } on PlatformException catch (error) {
+                      _restoreNotificationPreference(previousValue, error);
+                    } on MissingPluginException catch (error) {
+                      _restoreNotificationPreference(previousValue, error);
+                    } on PreferencesException catch (error) {
+                      _restoreNotificationPreference(previousValue, error);
+                    }
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildSectionTitle('Storage & Privacy'),
+            _buildCard(
+              children: [
+                _buildTile(
+                  icon: Icons.download_outlined,
+                  title: 'Downloaded Books',
+                  subtitle: 'Manage your offline books',
+                  onTap: () => _showMessage(
+                    'Downloaded Books',
+                    'Connect this option to your downloaded books page.',
+                  ),
+                ),
+                _buildDivider(),
+                _buildTile(
+                  icon: Icons.cleaning_services_outlined,
+                  title: 'Clear Cache',
+                  subtitle: 'Free up storage space',
+                  onTap: _confirmClearCache,
+                ),
+                _buildDivider(),
+                _buildTile(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Privacy Policy',
+                  subtitle: 'Learn how your data is used',
+                  onTap: () => _showMessage(
+                    'Privacy Policy',
+                    'Add your privacy policy page or website here.',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildSectionTitle('About'),
+            _buildCard(
+              children: [
+                _buildTile(
+                  icon: Icons.info_outline_rounded,
+                  title: 'About LB Library',
+                  subtitle: 'Version 1.0.0',
+                  onTap: () => _showMessage(
+                    'LB Library',
+                    'Your personal digital library for discovering and '
+                        'managing your favorite books.',
+                  ),
+                ),
+                _buildDivider(),
+                _buildTile(
+                  icon: Icons.star_outline_rounded,
+                  title: 'Rate Our App',
+                  subtitle: 'Tell us what you think',
+                  onTap: () => _showMessage(
+                    'Rate Our App',
+                    'Connect this option to your app store listing.',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Logout
+            _buildCard(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  leading: _iconContainer(
+                    Icons.logout_rounded,
+                    color: Colors.red,
+                  ),
+                  title: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: const Text('Sign out of your account'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.red,
+                    size: 16,
+                  ),
+                  onTap: _confirmLogout,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.menu_book_rounded,
+                    size: 30,
+                    color: _primaryColor.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'LB Library',
+                    style: TextStyle(
+                      color: _mutedColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Read more. Learn more.',
+                    style: TextStyle(color: _mutedColor, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -676,7 +680,22 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (shouldLogout != true || !mounted) return;
 
-    context.goNamed(AppRoute.login);
+    try {
+      await PreferencesService.instance.saveLoggedOut(true);
+    } on PlatformException catch (error) {
+      _showPreferenceError(error);
+      return;
+    } on MissingPluginException catch (error) {
+      _showPreferenceError(error);
+      return;
+    } on PreferencesException catch (error) {
+      _showPreferenceError(error);
+      return;
+    }
+
+    NetworkAPI.instance.dio.options.headers.remove('Authorization');
+    widget.onLogout?.call();
+    if (mounted) context.goNamed(AppRoute.login);
   }
 
   void _restoreNotificationPreference(bool value, Object error) {

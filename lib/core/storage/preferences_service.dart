@@ -10,6 +10,7 @@ class PreferencesService {
   static const _themeModeKey = 'app_theme_mode';
   static const _notificationsEnabledKey = 'notifications_enabled';
   static const _rememberedEmailKey = 'remembered_login_email';
+  static const _loggedOutKey = 'auth_logged_out';
 
   Future<SharedPreferences> get _preferences => SharedPreferences.getInstance();
 
@@ -72,6 +73,17 @@ class PreferencesService {
     _ensureSaved(
       await preferences.setString(_rememberedEmailKey, normalizedEmail),
       _rememberedEmailKey,
+    );
+  }
+
+  Future<bool> loadLoggedOut() async {
+    return (await _preferences).getBool(_loggedOutKey) ?? true;
+  }
+
+  Future<void> saveLoggedOut(bool loggedOut) async {
+    _ensureSaved(
+      await (await _preferences).setBool(_loggedOutKey, loggedOut),
+      _loggedOutKey,
     );
   }
 
