@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:lb_library/config/routes/app_route.dart';
 import 'package:lb_library/core/theme/app_theme.dart';
 import 'package:lb_library/core/theme/theme_controller.dart';
 import 'package:lb_library/languages/generated/l10n.dart';
@@ -9,10 +8,15 @@ import 'package:lb_library/widgets/language_controller.dart';
 
 class AppLB extends StatefulWidget {
   const AppLB({super.key});
-  static final router = AppRoute.configureRouter();
 
   static BuildContext get context {
-    return router.routerDelegate.navigatorKey.currentContext!;
+    final context = appRouter.routerDelegate.navigatorKey.currentContext;
+    if (context == null) {
+      throw StateError(
+        'AppLB.context accessed before the app router is mounted.',
+      );
+    }
+    return context;
   }
 
   @override
